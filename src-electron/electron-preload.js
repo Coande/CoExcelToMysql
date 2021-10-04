@@ -15,3 +15,12 @@
  *     doAThing: () => {}
  *   })
  */
+
+
+import { contextBridge } from 'electron'
+
+const preloadExcel = require('./preload-excel');
+const preloadDatabase = require('./preload-database');
+
+contextBridge.exposeInMainWorld('excelTool', preloadExcel)
+contextBridge.exposeInMainWorld('dbTool', preloadDatabase);

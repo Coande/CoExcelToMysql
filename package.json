@@ -7,14 +7,20 @@
   "private": true,
   "scripts": {
     "dev": "quasar dev",
+    "devElectron": "quasar dev -m electron",
     "build": "quasar build",
     "lint": "eslint --ext .js,.vue ./",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@jsplumb/browser-ui": "^5.0.0-RC31",
     "@quasar/extras": "^1.0.0",
     "core-js": "^3.6.5",
-    "quasar": "^2.0.0"
+    "exceljs": "^4.3.0",
+    "jsplumb": "^2.15.6",
+    "mysql2": "^2.3.0",
+    "quasar": "^2.0.0",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
