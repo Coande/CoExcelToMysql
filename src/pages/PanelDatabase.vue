@@ -41,13 +41,13 @@ export default defineComponent({
         console.error('读取表失败：', error);
         this.$q.notify({
           type: 'negative',
-          message: '读取表失败：' + error
+          message: '读取表失败：' + error.message
         });
         return;
       }
       rows.forEach((field, i) => {
         dbCols.push({
-          id: "dbCol_" + i,
+          id: "dbColId_" + i,
           name: field.COLUMN_NAME,
           comment: field.COLUMN_COMMENT,
         });

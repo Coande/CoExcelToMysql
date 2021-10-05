@@ -59,7 +59,9 @@ export default defineComponent({
   },
   data() {
     return {
-      fileInfo: null
+      fileInfo: {
+        files: []
+      }
     };
   },
   methods: {
@@ -78,14 +80,18 @@ export default defineComponent({
       }
       const dbInfo = JSON.parse(JSON.stringify(this.$refs.panelDatabase.getDbInfo()));
 
-
       this.$q.loading.show({
         spinner: QSpinnerGears,
         message: "执行追加导入中...",
       });
       try {
         await window.dbTool.appendImportExcel(
-          this.fileInfo.files.map(item => item.path),
+          this.fileInfo.files.map(item => {
+            return {
+              path: item.path,
+              name: item.name
+            }
+          }),
           dbInfo,
           relation,
           (filePath, readCount) => {
@@ -96,8 +102,16 @@ export default defineComponent({
             });
           }
         );
+        this.$q.dialog({
+          title: '成功',
+          message: this.fileInfo.files.map(item => item.name).join('、') + " 导入完毕"
+        });
       } catch(error) {
         console.error(error);
+        this.$q.dialog({
+          title: '错误',
+          message: error.message
+        });
       } finally {
         this.$q.loading.hide();
       }
@@ -120,7 +134,6 @@ export default defineComponent({
     }
   },
   mounted() {
-
   }
 });
 </script>

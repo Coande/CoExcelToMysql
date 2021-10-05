@@ -1,6 +1,7 @@
 <template>
   <div ref="container" :key="componentKey" class="row justify-between" style="position: relative;">
     <div class="col-5 col-md-4">
+      <div v-if="excelCols.length" class="text-grey-6 q-mb-sm">Excel 列信息：</div>
       <q-list dense v-if="excelCols.length" bordered separator>
         <draggable
           v-model="excelCols"
@@ -57,17 +58,32 @@
           </template>
         </draggable>
       </q-list>
-      <q-list v-if="excelCols.length" bordered separator> </q-list>
-      <q-btn
-        v-if="excelCols.length"
-        class="q-mt-md full-width"
-        color="primary"
-        icon="add_circle_outline"
-        label="附加信息"
-      />
+      <div v-if="excelCols.length" class="text-grey-6 q-mt-md q-mb-sm">变量与常量：</div>
+      <q-list v-if="excelCols.length" dense bordered separator>
+        <template v-for="(vari) in varList" :key="vari.id">
+          <q-item v-if="vari.varType == 'const'" :id="vari.id">
+            <q-item-section>
+              <q-item-label :lines="1">变量：{{vari.name}}
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item v-else :id="vari.id" class="list-item-const">
+            <q-item-section>
+              <q-item-label :lines="1">
+                <q-input v-model="vari.varValue" square standout="bg-grey-6" dense :placeholder="vari.name" @blur="handleVarInputBlur(vari.id)">
+                  <template v-slot:before>
+                    常量：
+                  </template>
+                </q-input>
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-list>
     </div>
 
     <div class="col-5 col-md-4">
+      <div v-if="dbCols.length" class="text-grey-6 q-mb-sm">数据库列信息：</div>
       <q-list dense v-if="dbCols.length" bordered separator>
         <draggable
           v-model="dbCols"
@@ -125,7 +141,20 @@ export default {
       excelCols: [],
       dbCols: [],
       jsPlumbIns: null,
-      componentKey: 0
+      componentKey: 0,
+      varList: [
+        {
+          id: 'varAndConst_0',
+          name: '文件名',
+          varType: 'const'
+        },
+        {
+          id: 'varAndConst_1',
+          name: '常量值',
+          varType: 'var',
+          varValue: ''
+        }
+      ]
     }
   },
   computed: {
@@ -186,6 +215,10 @@ export default {
 
           // 初始化左侧端点
           this.initEndpoint(this.excelCols, AnchorLocations.Right, -1);
+          // 初始化变量端点
+          if (this.excelCols.length) {
+            this.initEndpoint(this.varList, AnchorLocations.Right, -1);
+          }
           // 初始化右侧端点
           this.initEndpoint(this.dbCols, AnchorLocations.Left, 1);
 
@@ -201,6 +234,13 @@ export default {
           anchor: anchor,
           maxConnections: maxConnections,
         });
+      });
+    },
+    removeEndpoint(id) {
+      const el = document.getElementById(id);
+      const eps = this.jsPlumbIns.getEndpoints(el);
+      eps.forEach(ep => {
+        this.jsPlumbIns.deleteEndpoint(ep);
       });
     },
     connectEndpoint(leftId, RightId) {
@@ -287,12 +327,20 @@ export default {
           isExcel: true,
           found: found,
         };
-      } else {
+      } else if (id.startsWith('dbColId_')) {
         let found = this.dbCols.find((item) => item.id == id);
         return {
           isExcel: false,
           found: found,
         };
+      } else if (id.startsWith('varAndConst_')) {
+        let found = this.varList.find((item) => item.id == id);
+        return {
+          isExcel: true,
+          found: found,
+        };
+      } else {
+        console.error('未处理的 id 类型');
       }
     },
     /**
@@ -315,6 +363,43 @@ export default {
         }
       });
       return relation;
+    },
+    async handleVarInputBlur(currentId) {
+      const currentIndex = this.varList.findIndex(item => item.id == currentId);
+      // 检查是否还有空的
+      const emptyIndex = this.varList.findIndex(item => item.varType == 'var' && !item.varValue);
+      if (emptyIndex == -1) {
+        // 没有空的了，添加一行
+        const varItem = {
+          id: 'varAndConst_' + new Date().getTime(),
+          name: '常量值',
+          varType: 'var',
+          varValue: ''
+        };
+        this.varList.push(varItem);
+        // 渲染为 Endpoint
+        // 需要等待渲染完毕
+        await this.$nextTick();
+        // 初始化右侧端点
+        this.initEndpoint([varItem], AnchorLocations.Right, -1);
+      } else {
+        const emptyList = this.varList.filter(item => item.varType == 'var' && !item.varValue);
+        if (emptyList.length > 1) {
+          const currentItem = this.varList[currentIndex];
+
+          // 删除当前条目
+          this.varList.splice(currentIndex, 1);
+
+          // 删除连线及 Endpoint
+          this.removeEndpoint(currentItem.id);
+
+          // 等待渲染完毕
+          await this.$nextTick();
+
+          // 可能中间节点被删除，需要重绘
+          this.repaintJsplumb();
+        }
+      }
     }
   },
   async mounted() {
@@ -339,8 +424,24 @@ export default {
   cursor: crosshair;
 }
 
-.jtk-endpoint-drop-allowed {
-  background: red !important;
-  box-shadow: black;
+.list-item-const input{
+  line-height: 1.2em !important;
+  padding: 0 !important;
+}
+</style>
+
+<style>
+.list-item-const .q-field--dense .q-field__control, .q-field--dense .q-field__marginal {
+  height: 1.2em;
+}
+.list-item-const .q-field__marginal {
+  color: inherit;
+  font-size: 14px;
+}
+.list-item-const .q-field--standout .q-field__control {
+  padding: 0;
+}
+.list-item-const .q-field--dense .q-field__before, .q-field--dense .q-field__prepend {
+  padding-right: 0;
 }
 </style>

@@ -34,7 +34,7 @@ module.exports = {
     }
     return queryRes[0];
   },
-  appendImportExcel: async (filePaths, dbInfo, relation, cb) => {
+  appendImportExcel: async (files, dbInfo, relation, cb) => {
     if (Object.keys(relation).length == 0) {
       return;
     }
@@ -62,8 +62,9 @@ module.exports = {
     await connection.beginTransaction();
 
     try {
-      for (let index = 0; index < filePaths.length; index++) {
-        const filePath = filePaths[index];
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
+        const filePath = file.path;
 
         // 第二个参数主要是用来处理读取日期为数字的 BUG
         // https://github.com/exceljs/exceljs/issues/1430
@@ -81,10 +82,8 @@ module.exports = {
           const BATCH_COUNT = 500;
           let currentCount = 0;
 
-          const excelColNames = Object.keys(relation);
-          const dbCols = Object.values(relation);
-          const dbColNames = dbCols.map(item => item.name);
-          const dbColNamesTmp = dbCols.map(item => `\`${item.name}\``);
+          const dbColNames = Object.keys(relation);
+          const dbColNamesTmp = dbColNames.map(item => `\`${item}\``);
           const sqlTpl = `insert into ${dbInfo.table} (${dbColNamesTmp.join(',')}) values `;
           let sql = sqlTpl;
           let params = [];
@@ -102,9 +101,19 @@ module.exports = {
             let rowCellVals = [];
             dbColNames.forEach(dbColName => {
               const relValue = relation[dbColName];
-              const cell = row.getCell(relValue.colIndex + 1);
-              const cellValue = getCellShowValue(cell);
-              rowCellVals.push(cellValue);
+              if (relValue.id.startsWith('varAndConst_')) {
+                let colValue = '';
+                if (relValue.name == '文件名') {
+                  colValue = file.name;
+                } else if (relValue.name == '常量值'){
+                  colValue = relValue.varValue;
+                }
+                rowCellVals.push(colValue);
+              } else {
+                const cell = row.getCell(relValue.colIndex + 1);
+                const cellValue = getCellShowValue(cell);
+                rowCellVals.push(cellValue);
+              }
             });
 
 
