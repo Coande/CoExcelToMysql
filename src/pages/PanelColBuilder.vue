@@ -47,7 +47,7 @@
             <div class="q-focus-helper" tabindex="-1"></div>
             <q-item-section class="col-1">
               <q-item-label :lines="1">
-                <q-checkbox v-model="element.isChecked" />
+                <q-checkbox dense v-model="element.isChecked" />
               </q-item-label>
             </q-item-section>
             <q-item-section class="col-2 drag-handle" style="cursor: move">
@@ -107,7 +107,7 @@
                 </q-select>
               </q-item-label>
             </q-item-section>
-            <q-item-section class="col-3">
+            <q-item-section class="col-4">
               <q-item-label :lines="1">
                 <q-input type="textarea" rows="1" dense filled v-model="element.dbComment" :input-style="{resize: 'none'}" @blur="handleBlur($event, element.id)" />
               </q-item-label>
@@ -269,5 +269,10 @@ export default defineComponent({
 .ghost .q-focus-helper {
   background: currentColor;
   opacity: 0.15;
+}
+
+* >>> .q-item__section--main + .q-item__section--main {
+  padding-left: 8px;
+  margin-left: 0;
 }
 </style>
