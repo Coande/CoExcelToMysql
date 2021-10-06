@@ -28,12 +28,13 @@
   >
     <q-card>
       <q-card-section>
-        <panel-database ref="panelDatabase" @readTable="handleReadTable" />
+        <panel-database ref="panelDatabase" />
       </q-card-section>
     </q-card>
   </q-expansion-item>
 
   <div class="row q-gutter-x-md q-my-md">
+    <q-btn color="primary" label="读取表列" @click="handleReadDbTable" />
     <q-btn color="primary" label="自动匹配" @click="handleAutoMatch" />
     <!-- <q-btn color="primary" label="顺序匹配" @click="handleAppendImport" /> -->
     <q-btn color="primary" label="追加导入" @click="handleAppendImport" />
@@ -67,6 +68,32 @@ export default defineComponent({
   methods: {
     handleAutoMatch() {
       this.$refs.panelColList.autoMatch();
+    },
+    async handleReadDbTable() {
+      const dbInfo = this.$refs.panelDatabase.getDbInfo();
+
+      const dbCols = [];
+      let rows;
+      try {
+        rows = await window.dbTool.getColInfo(JSON.parse(JSON.stringify(dbInfo)));
+      } catch (error) {
+        console.error('读取表失败：', error);
+        this.$q.notify({
+          type: 'negative',
+          message: '读取表失败：' + error.message
+        });
+        return;
+      }
+      rows.forEach((field, i) => {
+        dbCols.push({
+          id: "dbColId_" + i,
+          name: field.COLUMN_NAME,
+          comment: field.COLUMN_COMMENT,
+          type: field.COLUMN_TYPE
+        });
+      });
+
+      this.$refs.panelColList.refreshDbCols(dbCols);
     },
     async handleAppendImport() {
       const relation = JSON.parse(JSON.stringify(this.$refs.panelColList.getRelation()));
@@ -126,12 +153,6 @@ export default defineComponent({
       this.$refs.panelColList.refreshExcelCols(fileInfo);
       this.fileInfo = fileInfo;
     },
-    /**
-     * 点击 读取表 后获取到表的列信息
-     */
-    handleReadTable(dbCols) {
-      this.$refs.panelColList.refreshDbCols(dbCols);
-    }
   },
   mounted() {
   }

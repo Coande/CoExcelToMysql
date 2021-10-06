@@ -28,7 +28,7 @@
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
-                <div class="text-grey-8 q-gutter-xs">
+                <div class="text-grey-4 q-gutter-xs">
                   <q-btn size="sm" flat dense round>
                     <q-icon name="visibility" />
                     <q-tooltip
@@ -116,7 +116,7 @@
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label caption :lines="1">varchar(255)</q-item-label>
+                <q-item-label caption :lines="1">{{ element.type }}</q-item-label>
               </q-item-section>
             </q-item>
           </template>

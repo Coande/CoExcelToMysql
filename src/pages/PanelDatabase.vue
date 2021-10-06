@@ -7,9 +7,6 @@
     <q-input class="col-5" v-model="dbInfo.username" label="username" />
     <q-input class="col-5" v-model="dbInfo.password" label="password" />
   </div>
-  <div class="row justify-center q-pt-md">
-    <q-btn color="primary" label="读取表" @click="handleReadTable" />
-  </div>
 </template>
 
 <script>
@@ -29,31 +26,6 @@ export default defineComponent({
     }
   },
   methods: {
-    async handleReadTable() {
-      // 记录配置信息
-      this.saveDbConfig();
-
-      const dbCols = [];
-      let rows;
-      try {
-        rows = await window.dbTool.getColInfo(JSON.parse(JSON.stringify(this.dbInfo)));
-      } catch (error) {
-        console.error('读取表失败：', error);
-        this.$q.notify({
-          type: 'negative',
-          message: '读取表失败：' + error.message
-        });
-        return;
-      }
-      rows.forEach((field, i) => {
-        dbCols.push({
-          id: "dbColId_" + i,
-          name: field.COLUMN_NAME,
-          comment: field.COLUMN_COMMENT,
-        });
-      });
-      this.$emit('readTable', dbCols);
-    },
     /**
      * 记录数据库配置信息
      */
@@ -74,6 +46,8 @@ export default defineComponent({
      * 暴露给父组件，用户获取数据库配置信息
      */
     getDbInfo() {
+      // 记录配置信息
+      this.saveDbConfig();
       return this.dbInfo;
     }
   },
