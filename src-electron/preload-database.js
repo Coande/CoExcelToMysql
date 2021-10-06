@@ -163,5 +163,40 @@ module.exports = {
       await connection.rollback();
       throw error;
     }
+  },
+  async createTable(dbInfo, builderCols) {
+    let sql = `CREATE TABLE \`${dbInfo.table}\` (\n`;
+    let colArr = [];
+    builderCols.forEach(col => {
+      colItem = `\`${col.dbColName}\` ${col.dbType} DEFAULT NULL COMMENT '${col.dbComment}'`;
+      colArr.push(colItem);
+    });
+    sql += colArr.join(',\n');
+    sql += ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
+    console.info('sql: ' + sql);
+
+        // 默认参数
+    const targetDbInfo = {
+      host: 'localhost',
+      port: '3306',
+      user: 'root',
+      password: '123456',
+      database: 'test',
+      table: 't_excel'
+    };
+    // 传入参数覆盖默认参数
+    Object.assign(targetDbInfo, dbInfo);
+
+    // 获取数据库连接
+    const connection = await mysql.createConnection({
+      host: targetDbInfo.host,
+      port: targetDbInfo.port,
+      user: targetDbInfo.user,
+      password: targetDbInfo.password,
+      database: targetDbInfo.database
+    });
+
+    await connection.execute(sql);
+
   }
 }

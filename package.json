@@ -19,6 +19,7 @@
     "exceljs": "^4.3.0",
     "jsplumb": "^2.15.6",
     "mysql2": "^2.3.0",
+    "pinyin": "^2.10.2",
     "quasar": "^2.0.0",
     "vuedraggable": "^4.1.0"
   },
