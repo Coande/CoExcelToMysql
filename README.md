@@ -1,26 +1,9 @@
-# Quasar App (excel-to-db)
+# CoExcelToMysql
 
-A Quasar Framework app
+便于根据 Excel 创建表，便于导入 Excel 数据到数据库的工具
 
-## Install the dependencies
-```bash
-yarn
-```
+## 演示
+![CoExcelToMysql.gif](./CoExcelToMySql.gif)
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
-
-### Lint the files
-```bash
-yarn run lint
-```
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.conf.js](https://v2.quasar.dev/quasar-cli/quasar-conf-js).
+## 下载
+[CoExcelToMysql-win32-x64.zip](https://github.com/Coande/CoExcelToMysql/releases/download/1.0.0/CoExcelToMysql-win32-x64.zip)
