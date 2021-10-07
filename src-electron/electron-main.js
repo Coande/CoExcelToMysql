@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme, Menu } from 'electron'
 import path from 'path'
 
 try {
@@ -54,3 +54,6 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+// 隐藏菜单
+Menu.setApplicationMenu(null)

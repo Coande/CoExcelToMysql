@@ -2,12 +2,13 @@
   "name": "excel-to-db",
   "version": "0.0.1",
   "description": "A Quasar Framework app",
-  "productName": "Quasar App",
+  "productName": "CoExcelToMysql",
   "author": "Coande <e12e@qq.com>",
   "private": true,
   "scripts": {
     "dev": "quasar dev",
     "devElectron": "quasar dev -m electron",
+    "buildElectron": "quasar build -m electron",
     "build": "quasar build",
     "lint": "eslint --ext .js,.vue ./",
     "test": "echo \"No test specified\" && exit 0"
@@ -27,6 +28,7 @@
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app": "^3.0.0",
     "electron": "^14.0.1",
+    "electron-packager": "^15.4.0",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.0.0",
