@@ -157,7 +157,6 @@ export default defineComponent({
      * 暴露给父组件，用于刷新 Excel 列信息
      */
     async refreshBuilderCols(fileInfo) {
-      console.log('fileInfo:', fileInfo);
       const {colNames, headRows} = fileInfo;
       this.builderCols = [];
       for (let i = 0; i < colNames.length; i++) {

@@ -1,65 +1,38 @@
-const { dateFormat, getCellShowValue  } = require('./preload-util');
+const { dateFormat, getCellShowValueExceljs  } = require('./preload-util');
 const Excel = require('exceljs');
-const mysql = require('mysql2/promise');
+const {getColInfo, getDbConnection} = require('./preload-database-comm');
+
+
+const getRowCellValues = (row, dbColNames, relation, file) => {
+  let rowCellVals = [];
+  dbColNames.forEach(dbColName => {
+    const relValue = relation[dbColName];
+    if (relValue.id.startsWith('varAndConst_')) {
+      let colValue = '';
+      if (relValue.name == '文件名') {
+        colValue = file.name;
+      } else if (relValue.name == '常量值'){
+        colValue = relValue.varValue;
+      }
+      rowCellVals.push(colValue);
+    } else {
+      const cell = row.getCell(relValue.colIndex + 1);
+      const cellValue = getCellShowValueExceljs(cell);
+      rowCellVals.push(cellValue);
+    }
+  });
+  return rowCellVals;
+}
 
 module.exports = {
-  getColInfo: async (dbInfo) => {
-    // 默认参数
-    const targetDbInfo = {
-      host: 'localhost',
-      port: '3306',
-      user: 'root',
-      password: '123456',
-      database: 'test',
-      table: 't_excel'
-    };
-    // 传入参数覆盖默认参数
-    Object.assign(targetDbInfo, dbInfo);
-
-    // 获取数据库连接
-    const connection = await mysql.createConnection({
-        host: targetDbInfo.host,
-        port: targetDbInfo.port,
-        user: targetDbInfo.user,
-        password: targetDbInfo.password,
-        database: targetDbInfo.database
-    });
-
-    // 查询表结构
-    const sql = 'select COLUMN_NAME,COLUMN_TYPE,COLUMN_COMMENT from information_schema.`COLUMNS` where TABLE_SCHEMA = ? and TABLE_NAME = ?';
-    const queryRes = await connection.execute(sql, [targetDbInfo.database, targetDbInfo.table]);
-
-    if (queryRes[0].length == 0) {
-      throw '数据库或表不存在';
-    }
-    return queryRes[0];
-  },
+  getColInfo,
   appendImportExcel: async (files, dbInfo, relation, cb) => {
     if (Object.keys(relation).length == 0) {
       return;
     }
 
-    // 默认参数
-    const targetDbInfo = {
-      host: 'localhost',
-      port: '3306',
-      user: 'root',
-      password: '123456',
-      database: 'test',
-      table: 't_excel'
-    };
-    // 传入参数覆盖默认参数
-    Object.assign(targetDbInfo, dbInfo);
     // 获取数据库连接
-    const connection = await mysql.createConnection({
-      host: targetDbInfo.host,
-      port: targetDbInfo.port,
-      user: targetDbInfo.user,
-      password: targetDbInfo.password,
-      database: targetDbInfo.database
-    });
-
-    await connection.beginTransaction();
+    const connection = await getDbConnection(dbInfo);
 
     try {
       for (let index = 0; index < files.length; index++) {
@@ -98,25 +71,7 @@ module.exports = {
               continue;
             }
             // 获取行的所有值
-            let rowCellVals = [];
-            dbColNames.forEach(dbColName => {
-              const relValue = relation[dbColName];
-              if (relValue.id.startsWith('varAndConst_')) {
-                let colValue = '';
-                if (relValue.name == '文件名') {
-                  colValue = file.name;
-                } else if (relValue.name == '常量值'){
-                  colValue = relValue.varValue;
-                }
-                rowCellVals.push(colValue);
-              } else {
-                const cell = row.getCell(relValue.colIndex + 1);
-                const cellValue = getCellShowValue(cell);
-                rowCellVals.push(cellValue);
-              }
-            });
-
-
+            let rowCellVals = getRowCellValues(row, dbColNames, relation, file);
             if (currentCount < BATCH_COUNT) {
               // 拼接 sql
               sql += '('
@@ -164,6 +119,7 @@ module.exports = {
       throw error;
     }
   },
+
   async createTable(dbInfo, builderCols) {
     let sql = `CREATE TABLE \`${dbInfo.table}\` (\n`;
     let colArr = [];
@@ -175,28 +131,13 @@ module.exports = {
     sql += ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
     console.info('sql: ' + sql);
 
-        // 默认参数
-    const targetDbInfo = {
-      host: 'localhost',
-      port: '3306',
-      user: 'root',
-      password: '123456',
-      database: 'test',
-      table: 't_excel'
-    };
-    // 传入参数覆盖默认参数
-    Object.assign(targetDbInfo, dbInfo);
-
     // 获取数据库连接
-    const connection = await mysql.createConnection({
-      host: targetDbInfo.host,
-      port: targetDbInfo.port,
-      user: targetDbInfo.user,
-      password: targetDbInfo.password,
-      database: targetDbInfo.database
-    });
+    const connection = await getDbConnection(dbInfo);
 
     await connection.execute(sql);
 
   }
 }
+
+
+

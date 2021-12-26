@@ -43,7 +43,7 @@ export default defineComponent({
   },
   data() {
     return {
-      currentTab: 'craeteTable'
+      currentTab: 'importExcel'
     }
   },
   methods: {

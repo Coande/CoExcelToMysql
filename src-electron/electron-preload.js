@@ -17,10 +17,28 @@
  */
 
 
-import { contextBridge } from 'electron'
+import { contextBridge } from "electron";
+const remote = require("@electron/remote");
 
-const preloadExcel = require('./preload-excel');
-const preloadDatabase = require('./preload-database');
+const { parser } = remote.getGlobal("sharedObject").cmdParams;
+// const parser = "xlsxextract";
 
-contextBridge.exposeInMainWorld('excelTool', preloadExcel)
-contextBridge.exposeInMainWorld('dbTool', preloadDatabase);
+const preloadExcelExceljs = require('./preload-excel-exceljs');
+const preloadExcelXlsxextract = require('./preload-excel-xlsxextract');
+const preloadDatabaseExceljs = require('./preload-database-exceljs');
+const preloadDatabaseXlsxextract = require('./preload-database-xlsxextract');
+
+
+const excelTools = {
+  exceljs: preloadExcelExceljs,
+  xlsxextract: preloadExcelXlsxextract,
+};
+
+const dbTools = {
+  exceljs: preloadDatabaseExceljs,
+  xlsxextract: preloadDatabaseXlsxextract,
+};
+
+console.log("using parser:", parser);
+contextBridge.exposeInMainWorld("excelTool", excelTools[parser]);
+contextBridge.exposeInMainWorld("dbTool", dbTools[parser]);

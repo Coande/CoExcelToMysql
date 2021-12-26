@@ -1,5 +1,5 @@
 const Excel = require('exceljs');
-const { getCellShowValue  } = require('./preload-util');
+const { getCellShowValueExceljs: getCellShowValueExceljs  } = require('./preload-util');
 
 module.exports = {
   getColumnNames: async (filePath) => {
@@ -18,7 +18,7 @@ module.exports = {
           const rowCellVals = [];
           for (let index = 0; index < colNames.length; index++) {
             const cell = row.getCell(index + 1);
-            rowCellVals.push(getCellShowValue(cell));
+            rowCellVals.push(getCellShowValueExceljs(cell));
           }
           headRows.push(rowCellVals);
         } else {

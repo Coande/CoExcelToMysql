@@ -27,9 +27,22 @@ function dateFormat(fmt, date) {
   return fmt;
 }
 
+/**
+ * 判断入参的类型，返回 [object XXX] 的文本
+ * @param {*} cc
+ * @returns
+ */
+function getTypeof(val){
+  var typeName = Object.prototype.toString.call(val);
+  if( typeName == "[object Object]"){
+      typeName = "[object" + val.constructor.name + "]";
+  }
+  return typeName;
+}
+
 module.exports = {
   dateFormat,
-  getCellShowValue: (cell) => {
+  getCellShowValueExceljs: (cell) => {
     let cellValue = null;
     if (cell.type == Excel.ValueType.Date) {
       // 日期类型转换成可读的字符串
@@ -38,6 +51,19 @@ module.exports = {
       }
     } else {
       cellValue = cell.value;
+    }
+    return cellValue;
+  },
+  getCellShowValueXlsxExtract: (cell) => {
+    let cellValue = null;
+    if (getTypeof(cell) == '[object Date]') {
+      if (cell) {
+        cellValue = dateFormat("YYYY-mm-dd HH:MM:SS", new Date(cell))
+      }
+    } else if(getTypeof(cell) == '[object Undefined]') {
+      cellValue = null;
+    } else {
+      cellValue = cell;
     }
     return cellValue;
   }
