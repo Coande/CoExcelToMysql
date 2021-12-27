@@ -1,6 +1,6 @@
 const { dateFormat, getCellShowValueExceljs  } = require('./preload-util');
 const Excel = require('exceljs');
-const {getColInfo, getDbConnection} = require('./preload-database-comm');
+const {getColInfo, getDbConnection, createTable} = require('./preload-database-comm');
 
 
 const getRowCellValues = (row, dbColNames, relation, file) => {
@@ -42,11 +42,11 @@ module.exports = {
         // 第二个参数主要是用来处理读取日期为数字的 BUG
         // https://github.com/exceljs/exceljs/issues/1430
         const workbookReader = new Excel.stream.xlsx.WorkbookReader(filePath, {
-          entries: 'emit',
-          sharedStrings: 'cache',
-          hyperlinks: 'cache',
-          styles: 'cache',
-          worksheets: 'emit',
+          entries: "emit",
+          sharedStrings: "cache",
+          hyperlinks: "cache",
+          styles: "cache",
+          worksheets: "emit",
         });
 
         let fileRowCount = 0;
@@ -56,17 +56,22 @@ module.exports = {
           let currentCount = 0;
 
           const dbColNames = Object.keys(relation);
-          const dbColNamesTmp = dbColNames.map(item => `\`${item}\``);
-          const sqlTpl = `insert into ${dbInfo.table} (${dbColNamesTmp.join(',')}) values `;
+          const dbColNamesTmp = dbColNames.map((item) => `\`${item}\``);
+          const sqlTpl = `insert into ${dbInfo.table} (${dbColNamesTmp.join(
+            ","
+          )}) values `;
           let sql = sqlTpl;
           let params = [];
           let isFirst = true;
-          console.info('导入开始时间： ', dateFormat("YYYY-mm-dd HH:MM:SS", new Date()));
+          console.info(
+            "导入开始时间： ",
+            dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+          );
           for await (const row of worksheetReader) {
-            fileRowCount ++;
+            fileRowCount++;
             cb(filePath, fileRowCount);
             // 跳过第一行
-            if(isFirst) {
+            if (isFirst) {
               isFirst = false;
               continue;
             }
@@ -74,13 +79,13 @@ module.exports = {
             let rowCellVals = getRowCellValues(row, dbColNames, relation, file);
             if (currentCount < BATCH_COUNT) {
               // 拼接 sql
-              sql += '('
-              const cellsTmp = rowCellVals.map(item => `?`);
-              sql += cellsTmp.join(',');
+              sql += "(";
+              const cellsTmp = rowCellVals.map((item) => `?`);
+              sql += cellsTmp.join(",");
               params = params.concat(rowCellVals);
-              sql += '),'
+              sql += "),";
 
-              currentCount ++;
+              currentCount++;
             } else {
               sql = sql.substr(0, sql.length - 1);
               // 达到批量最大值，执行 sql 并重置
@@ -91,14 +96,13 @@ module.exports = {
               currentCount = 0;
 
               // 拼接 sql
-              sql += '('
-              const cellsTmp = rowCellVals.map(item => `?`);
-              sql += cellsTmp.join(',');
+              sql += "(";
+              const cellsTmp = rowCellVals.map((item) => `?`);
+              sql += cellsTmp.join(",");
               params = params.concat(rowCellVals);
-              sql += '),'
+              sql += "),";
 
-              currentCount ++;
-
+              currentCount++;
             }
           }
           // 最后一页入库
@@ -109,9 +113,15 @@ module.exports = {
           break;
         }
         // 提交事务
-        console.info('提交事务时间： ', dateFormat("YYYY-mm-dd HH:MM:SS", new Date()));
+        console.info(
+          "提交事务时间： ",
+          dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+        );
         await connection.commit();
-        console.info('导入结束时间： ', dateFormat("YYYY-mm-dd HH:MM:SS", new Date()));
+        console.info(
+          "导入结束时间： ",
+          dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+        );
       }
     } catch (error) {
       // 回滚事务
@@ -119,25 +129,8 @@ module.exports = {
       throw error;
     }
   },
-
-  async createTable(dbInfo, builderCols) {
-    let sql = `CREATE TABLE \`${dbInfo.table}\` (\n`;
-    let colArr = [];
-    builderCols.forEach(col => {
-      colItem = `\`${col.dbColName}\` ${col.dbType} DEFAULT NULL COMMENT '${col.dbComment}'`;
-      colArr.push(colItem);
-    });
-    sql += colArr.join(',\n');
-    sql += ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
-    console.info('sql: ' + sql);
-
-    // 获取数据库连接
-    const connection = await getDbConnection(dbInfo);
-
-    await connection.execute(sql);
-
-  }
-}
+  createTable,
+};
 
 
 

@@ -48,5 +48,21 @@ module.exports = {
    * @param {*} dbInfo
    * @returns
    */
-  getDbConnection
+  getDbConnection,
+  async createTable(dbInfo, builderCols) {
+    let sql = `CREATE TABLE \`${dbInfo.table}\` (\n`;
+    let colArr = [];
+    builderCols.forEach((col) => {
+      colItem = `\`${col.dbColName}\` ${col.dbType} DEFAULT NULL COMMENT '${col.dbComment}'`;
+      colArr.push(colItem);
+    });
+    sql += colArr.join(",\n");
+    sql += ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+    console.info("sql: " + sql);
+
+    // 获取数据库连接
+    const connection = await getDbConnection(dbInfo);
+
+    await connection.execute(sql);
+  },
 };

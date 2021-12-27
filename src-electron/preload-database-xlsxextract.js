@@ -4,7 +4,7 @@ const {
   getCellShowValueXlsxExtract: getCellShowValueXlsxExtract,
 } = require("./preload-util");
 
-const { getColInfo, getDbConnection } = require("./preload-database-comm");
+const { getColInfo, getDbConnection,createTable } = require("./preload-database-comm");
 
 const getRowCellValues = (row, dbColNames, relation, file) => {
   let rowCellVals = [];
@@ -201,4 +201,5 @@ module.exports = {
       throw error;
     }
   },
+  createTable
 };
