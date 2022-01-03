@@ -80,10 +80,6 @@ const importOneFile = (
   )}) values `;
   let sql = sqlTpl;
   let params = [];
-  console.info(
-    "导入开始时间： ",
-    dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
-  );
 
   let fileRowCount = 0;
   new XLSX()
@@ -167,10 +163,23 @@ module.exports = {
 
     // 获取数据库连接
     const connection = await getDbConnection(dbInfo);
-
+    let currentFile;
     try {
       for (let index = 0; index < files.length; index++) {
+        console.info(
+          "导入开始时间： ",
+          dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+        );
+
+        // 开启事务
+        console.info(
+          "开启事务时间： ",
+          dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+        );
+        await connection.beginTransaction();
+
         const file = files[index];
+        currentFile = file;
 
         await new Promise(async (resolve, reject) => {
           importOneFile(
@@ -196,9 +205,13 @@ module.exports = {
         );
       }
     } catch (error) {
+      console.info(
+        "回滚事务时间： ",
+        dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+      );
       // 回滚事务
       await connection.rollback();
-      throw error;
+      throw new Error(`处理文件 ${currentFile.name} 时报错：${error.message}`);
     }
   },
   createTable

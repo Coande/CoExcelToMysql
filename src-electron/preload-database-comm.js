@@ -20,8 +20,6 @@ const getDbConnection = async (dbInfo) => {
       password: targetDbInfo.password,
       database: targetDbInfo.database,
     });
-
-    await connection.beginTransaction();
     return connection;
   };
 

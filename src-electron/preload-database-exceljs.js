@@ -33,10 +33,18 @@ module.exports = {
 
     // 获取数据库连接
     const connection = await getDbConnection(dbInfo);
-
+    let currentFile;
     try {
       for (let index = 0; index < files.length; index++) {
+        // 开启事务
+        console.info(
+          "开启事务时间： ",
+          dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+        );
+        await connection.beginTransaction();
+
         const file = files[index];
+        currentFile = file;
         const filePath = file.path;
 
         // 第二个参数主要是用来处理读取日期为数字的 BUG
@@ -124,9 +132,13 @@ module.exports = {
         );
       }
     } catch (error) {
+      console.info(
+        "回滚事务时间： ",
+        dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+      );
       // 回滚事务
       await connection.rollback();
-      throw error;
+      throw new Error(`处理文件 ${currentFile.name} 时报错：${error.message}`);
     }
   },
   createTable,
