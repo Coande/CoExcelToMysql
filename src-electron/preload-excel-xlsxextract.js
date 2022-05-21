@@ -4,14 +4,14 @@ const {
 } = require("./preload-util");
 
 module.exports = {
-  getColumnNames: async (filePath) => {
+  getColumnNames: async (filePath, sheetno) => {
     let colNames = [];
     const headRows = [];
     let count = 0;
 
     const result = await new Promise(async (resolve) => {
       new XLSX()
-        .extract(filePath, { sheet_id: 1 })
+        .extract(filePath, { sheet_nr: sheetno })
         .on("row", function (row) {
           count++;
           if (count == 1) {

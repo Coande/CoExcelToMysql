@@ -2,11 +2,16 @@ const Excel = require('exceljs');
 const { getCellShowValueExceljs: getCellShowValueExceljs  } = require('./preload-util');
 
 module.exports = {
-  getColumnNames: async (filePath) => {
+  getColumnNames: async (filePath, sheetno) => {
     const workbookReader = new Excel.stream.xlsx.WorkbookReader(filePath);
     let colNames = [];
     const headRows = [];
+    let currentSheetNo = 0;
     for await (const worksheetReader of workbookReader) {
+      currentSheetNo ++;
+      if (currentSheetNo != sheetno) {
+        continue;
+      }
       let count = 0;
       for await (const row of worksheetReader) {
         count ++;

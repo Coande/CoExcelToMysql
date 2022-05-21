@@ -26,7 +26,7 @@ const getRowCellValues = (row, dbColNames, relation, file) => {
 
 module.exports = {
   getColInfo,
-  appendImportExcel: async (files, dbInfo, relation, cb) => {
+  appendImportExcel: async (files, sheetno, dbInfo, relation, cb) => {
     if (Object.keys(relation).length == 0) {
       return;
     }
@@ -58,8 +58,12 @@ module.exports = {
         });
 
         let fileRowCount = 0;
-
+        let currentSheetNo = 0;
         for await (const worksheetReader of workbookReader) {
+          currentSheetNo ++;
+          if (currentSheetNo != sheetno) {
+            continue;
+          }
           const BATCH_COUNT = 500;
           let currentCount = 0;
 

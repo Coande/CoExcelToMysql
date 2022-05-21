@@ -31,6 +31,7 @@ const importOneFile = (
   relation,
   dbInfo,
   file,
+  sheetno,
   cb,
   connection,
   resolve,
@@ -83,7 +84,7 @@ const importOneFile = (
 
   let fileRowCount = 0;
   new XLSX()
-    .extract(filePath, { sheet_id: 1, ignore_header: 1 })
+    .extract(filePath, { sheet_nr: sheetno, ignore_header: 1 })
     .on("row", (row) =>
       queue.push({
         row: row,
@@ -156,7 +157,7 @@ const importOneFile = (
 
 module.exports = {
   getColInfo,
-  appendImportExcel: async (files, dbInfo, relation, cb) => {
+  appendImportExcel: async (files, sheetno, dbInfo, relation, cb) => {
     if (Object.keys(relation).length == 0) {
       return;
     }
@@ -186,6 +187,7 @@ module.exports = {
             relation,
             dbInfo,
             file,
+            sheetno,
             cb,
             connection,
             resolve,

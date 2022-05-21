@@ -61,7 +61,8 @@ export default defineComponent({
   data() {
     return {
       fileInfo: {
-        files: []
+        files: [],
+        sheetno: 1
       }
     };
   },
@@ -119,6 +120,7 @@ export default defineComponent({
               name: item.name
             }
           }),
+          this.fileInfo.sheetno,
           dbInfo,
           relation,
           (filePath, readCount) => {

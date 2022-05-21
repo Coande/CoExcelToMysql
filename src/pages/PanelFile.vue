@@ -1,4 +1,5 @@
 <template>
+  <q-input type="number" v-model="sheetno" label="sheet no" class="q-mb-md" />
   <q-file
     filled
     use-chips
@@ -14,16 +15,17 @@
 export default {
   data() {
     return {
-      files: []
+      files: [],
+      sheetno: 1
     };
   },
   methods: {
-    async fileChange() {
+    async fileChange(sheet) {
       let lastColNames = [];
       let firstHeadRows = [];
       for (let index = 0; index < this.files.length; index++) {
         const file = this.files[index];
-        const {colNames, headRows} = await window.excelTool.getColumnNames(file.path);
+        const {colNames, headRows} = await window.excelTool.getColumnNames(file.path, this.sheetno);
         if (index > 0) {
           // 验证，仅允许列名都相同的 Excel
           if (lastColNames.length != colNames.length) {
@@ -57,7 +59,8 @@ export default {
       this.$emit('fileChange', {
         files: this.files,
         colNames: lastColNames,
-        headRows: firstHeadRows
+        headRows: firstHeadRows,
+        sheetno: this.sheetno
       });
     }
   }
